@@ -13,13 +13,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 <body>
 <div id="app"><div class="loading">Loading your email brief...</div></div>
 <script>
-const ZAPIER_STORAGE_URL = "https://store.zapier.com/api/records?secret=c2510c6f-5168-4eb5-84e8-855caf15831f&key=email_triage_latest";
+const ZAPIER_STORAGE_URL = "https://store.zapier.com/api/records?secret=c2510c6f-5168-4eb5-84e8-855caf15831f&key=email_triage_html";
 
 async function loadBrief() {
   try {
     const res = await fetch(ZAPIER_STORAGE_URL);
     const data = await res.json();
-    const html = data.email_triage_latest || "";
+    const html = data.email_triage_html || "";
     if (!html) {
       document.getElementById("app").innerHTML = "<div class='loading'>No brief available yet. Check back after 6am.</div>";
       return;
