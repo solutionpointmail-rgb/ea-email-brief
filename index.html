@@ -38,4 +38,75 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .btn{font-size:13px;padding:6px 14px;border-radius:8px;border:0.5px solid #e0ddd6;background:transparent;cursor:pointer;color:#2C2C2A;font-family:inherit}
 .btn:hover{background:#F1EFE8}
 .btn-send{background:#E1F5EE;border-color:#1D9E75;color:#085041}
-.bt
+.btn-send:hover{background:#9FE1CB}
+.btn-skip{color:#888780}
+.remaining{font-size:13px;color:#888780}
+.done-banner{text-align:center;padding:2rem;color:#888780;font-size:14px;display:none}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">Loading your email brief...</div></div>
+<script>
+const ZAPIER_STORAGE_URL = "https://store.zapier.com/api/records?secret=c2510c6f-5168-4eb5-84e8-855caf15831f&key=email_triage_html";
+const ZAP1_WEBHOOK = "https://hooks.zapier.com/hooks/catch/5928257/43dbahw/";
+const ZAP3_WEBHOOK = "https://hooks.zapier.com/hooks/catch/5928257/4398ht2/";
+
+function toggleCard(id){
+  var b = document.getElementById("body-"+id);
+  b.classList.toggle("open");
+}
+
+function markDone(id, action){
+  var card = document.getElementById("card-"+id);
+  var draft = document.getElementById("draft-"+id);
+  var draftText = draft ? draft.value : "";
+  card.classList.add("done");
+  document.getElementById("body-"+id).classList.remove("open");
+  var rem = parseInt(document.getElementById("remaining").textContent);
+  rem = Math.max(0, rem-1);
+  document.getElementById("remaining").textContent = rem;
+  if(rem === 0){ document.getElementById("done-banner").style.display = "block"; }
+  if(action === "sent"){
+    fetch(ZAP3_WEBHOOK, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({action:"send", card_id:id, draft:draftText})
+    });
+  }
+}
+
+function runRefresh(){
+  var btn = document.querySelector(".refresh-btn");
+  btn.textContent = "Running...";
+  btn.disabled = true;
+  fetch(ZAP1_WEBHOOK).then(function(){
+    btn.textContent = "Refreshing - check back in ~3 mins";
+    setTimeout(function(){
+      btn.textContent = "Refresh inbox";
+      btn.disabled = false;
+    }, 180000);
+  }).catch(function(){
+    btn.textContent = "Refresh inbox";
+    btn.disabled = false;
+  });
+}
+
+async function loadBrief() {
+  try {
+    const res = await fetch(ZAPIER_STORAGE_URL);
+    const data = await res.json();
+    const html = data.email_triage_html || "";
+    if(!html){
+      document.getElementById("app").innerHTML = "<div class='loading'>No brief available yet. Check back after 6am.</div>";
+      return;
+    }
+    document.getElementById("app").innerHTML = html;
+  } catch(e) {
+    document.getElementById("app").innerHTML = "<div class='loading'>Could not load brief. Try refreshing.</div>";
+  }
+}
+
+loadBrief();
+</script>
+</body>
+</html>
