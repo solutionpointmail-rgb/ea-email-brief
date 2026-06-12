@@ -67,11 +67,8 @@ function markDone(id, action){
   document.getElementById("remaining").textContent = rem;
   if(rem === 0){ document.getElementById("done-banner").style.display = "block"; }
   if(action === "sent"){
-    fetch(ZAP3_WEBHOOK, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({action:"send", card_id:id, draft:draftText})
-    });
+    var params = "?action=send&card_id=" + id + "&draft=" + encodeURIComponent(draftText);
+    fetch(ZAP3_WEBHOOK + params, {mode: "no-cors"});
   }
 }
 
